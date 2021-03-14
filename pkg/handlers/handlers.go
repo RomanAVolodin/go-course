@@ -2,9 +2,11 @@ package handlers
 
 import (
 	"github.com/RomanAVolodin/go-course/pkg/config"
+	"github.com/RomanAVolodin/go-course/pkg/models"
 	"github.com/RomanAVolodin/go-course/pkg/render"
 	"net/http"
 )
+
 
 // Repo the repository useed by the handlers
 var Repo *Repository
@@ -16,7 +18,7 @@ type Repository struct {
 
 // NewRepo creates new repository
 func NewRepo(a *config.AppConfig) *Repository {
-	return &Repository {
+	return &Repository{
 		App: a,
 	}
 }
@@ -26,12 +28,24 @@ func NewHandlers(r *Repository) {
 	Repo = r
 }
 
-// Home is the bout page handler
+// Home is the home page handler
 func (m *Repository) Home(w http.ResponseWriter, r *http.Request) {
-	render.RenderTemplate(w, "home.page.tmpl")
+	remoteIp := r.RemoteAddr
+	m.App.Session.Put(r.Context(), "remote_ip", remoteIp)
+
+	render.RenderTemplate(w, "home.page.tmpl", &models.TemplateData{})
 }
 
 // About is the bout page handler
 func (m *Repository) About(w http.ResponseWriter, r *http.Request) {
-	render.RenderTemplate(w, "about.page.tmpl")
+	stringMap := make(map[string]string)
+	stringMap["test"] = "Hello"
+
+
+	remoteIp := m.App.Session.GetString(r.Context(), "remote_ip")
+	stringMap["remote_ip"] = remoteIp
+
+	render.RenderTemplate(w, "about.page.tmpl", &models.TemplateData{
+		StringMap: stringMap,
+	})
 }
